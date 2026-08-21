@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Wolds Farm 3D Map</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CesiumJS Globe - OSM Base Map</title>
 
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.139/Build/Cesium/Cesium.js"></script>
-  <link
-    href="https://cesium.com/downloads/cesiumjs/releases/1.139/Build/Cesium/Widgets/widgets.css"
-    rel="stylesheet"
-  >
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Cesium.js"></script>
 
   <style>
     html, body, #cesiumContainer {
@@ -17,30 +15,90 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    /* Floating control panel styling */
+    #toolbar {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 100;
+      background: rgba(42, 42, 42, 0.85);
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      background-color: #3880ff;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #1e66e5;
+    }
+
+    button.active {
+      background-color: #10439b;
     }
   </style>
 </head>
-
 <body>
+
+  <div id="toolbar">
+    <button id="perspectiveBtn" class="active" onclick="setPerspective()">Perspective View</button>
+    <button id="orthographicBtn" onclick="setOrthographic()">Orthographic View</button>
+  </div>
+
   <div id="cesiumContainer"></div>
 
   <script>
-    async function init() {
-      const viewer = new Cesium.Viewer("cesiumContainer", {
-        baseLayerPicker: false,
-        geocoder: false
-      });
-  
-      const tileset = await Cesium.Cesium3DTileset.fromUrl(
-        "https://deadb33f.github.io/wolds.farm/tiles/tileset.json"
-      );
-  
-      viewer.scene.primitives.add(tileset);
-  
-      await viewer.zoomTo(tileset);
+    Cesium.Ion.defaultAccessToken = '';
+
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      // Use 'baseLayer' instead of 'imageryProvider' for modern Cesium versions
+      baseLayer: new Cesium.ImageryLayer(
+        new Cesium.UrlTemplateImageryProvider({
+          url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          credit: '© OpenStreetMap contributors',
+          maximumLevel: 19 // OSM tiles only go up to zoom level 19
+        })
+      ),
+      baseLayerPicker: false,
+      geocoder: false,
+      homeButton: false,
+      infoBox: false,
+      sceneModePicker: false,
+      selectionIndicator: false,
+      timeline: false,
+      animation: false,
+      navigationHelpButton: false
+    });
+
+    const camera = viewer.camera;
+    const perspectiveBtn = document.getElementById('perspectiveBtn');
+    const orthographicBtn = document.getElementById('orthographicBtn');
+
+    function setPerspective() {
+      camera.switchToPerspectiveFrustum();
+      perspectiveBtn.classList.add('active');
+      orthographicBtn.classList.remove('active');
     }
-  
-    init();
+
+    function setOrthographic() {
+      camera.switchToOrthographicFrustum();
+      orthographicBtn.classList.add('active');
+      perspectiveBtn.classList.remove('active');
+    }
   </script>
 </body>
 </html>
