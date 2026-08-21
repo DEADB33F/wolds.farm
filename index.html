@@ -99,6 +99,53 @@
       orthographicBtn.classList.add('active');
       perspectiveBtn.classList.remove('active');
     }
+	
+	async function loadWebODMTileset() {
+  const tilesetUrl = 'tileset/tileset.json';
+
+  try {
+    // 1. Load the 3D tileset asynchronously
+    const tileset = await Cesium.Cesium3DTileset.fromUrl(tilesetUrl);
+	viewer.scene.primitives.add(tileset);
+
+
+	const center = tileset.boundingSphere.center;
+    const enuToFixed = Cesium.Transforms.eastNorthUpToFixedFrame(center);
+
+	// Get the inverse to go from ECEF (Globe) space to Local space
+	const fixedToEnu = Cesium.Matrix4.inverseTransformation(enuToFixed, new Cesium.Matrix4());
+
+	// Define the 90-degree rotation around the local X-axis
+	const angle = Cesium.Math.toRadians(-90.0); // Try -90.0 if it flips upside down!
+	const localRotation = Cesium.Matrix4.fromRotationTranslation(
+	  Cesium.Matrix3.fromRotationX(angle) 
+	);
+
+	// Combine the matrices: Localize -> Rotate -> Send back to Globe space
+	let modelMatrix = Cesium.Matrix4.multiply(enuToFixed, localRotation, new Cesium.Matrix4());
+	modelMatrix = Cesium.Matrix4.multiply(modelMatrix, fixedToEnu, modelMatrix);
+
+	// Apply the fix to the tileset
+	tileset.modelMatrix = modelMatrix;
+	
+	// 2. Add the tileset to the scene
+    
+    // 3. Center and position camera over the model
+    await viewer.zoomTo(
+      tileset, 
+      new Cesium.HeadingPitchRange(
+        Cesium.Math.toRadians(0),   // Heading (North)
+        Cesium.Math.toRadians(-45), // Pitch (45° angle look-down)
+        0                           // Range (0 auto-fits distance to model extent)
+      )
+    );
+  } catch (error) {
+    console.error('Error loading 3D tileset:', error);
+  }
+}
+
+loadWebODMTileset();
+
   </script>
 </body>
 </html>
