@@ -25,18 +25,22 @@
   <div id="cesiumContainer"></div>
 
   <script>
-    const viewer = new Cesium.Viewer("cesiumContainer", {
-      baseLayerPicker: false,
-      geocoder: false
-    });
-
-    const tileset = viewer.scene.primitives.add(
-      await Cesium.Cesium3DTileset.fromUrl(
-        "https://deadb33f.github.io/wolds.farm/tileset/tileset.json"
-      )
-    );
-
-    await viewer.zoomTo(tileset);
+    async function init() {
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        baseLayerPicker: false,
+        geocoder: false
+      });
+  
+      const tileset = await Cesium.Cesium3DTileset.fromUrl(
+        "https://YOUR_USERNAME.github.io/YOUR_REPOSITORY/tiles/tileset.json"
+      );
+  
+      viewer.scene.primitives.add(tileset);
+  
+      await viewer.zoomTo(tileset);
+    }
+  
+    init();
   </script>
 </body>
 </html>
