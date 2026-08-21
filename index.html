@@ -1,2 +1,45 @@
-<head></head>
-<body>TEST</body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Wolds Farm 3D Map</title>
+  <!-- Load CesiumJS Styles and Script from CDN -->
+  <link href="https://cesium.com" rel="stylesheet">
+  <script src="https://cesium.com"></script>
+  <style>
+    html, body, #cesiumContainer {
+      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script>
+    // Initialize viewer with a basic, token-free base map
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: null,
+      baseLayer: Cesium.ImageryLayer.fromProviderAsync(
+        Cesium.TileMapServiceImageryProvider.fromUrl(
+          Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII')
+        )
+      )
+    });
+
+    async function loadTileset() {
+      try {
+        // Load your local tileset.json using a relative path
+        const tileset = await Cesium.Cesium3DTileset.fromUrl('./your-tileset-folder/tileset.json');
+        
+        viewer.scene.primitives.add(tileset);
+        
+        // Zoom the camera automatically to your tileset location
+        await viewer.zoomTo(tileset);
+      } catch (error) {
+        console.error(`Error loading tileset: ${error}`);
+      }
+    }
+
+    loadTileset();
+  </script>
+</body>
+</html>
